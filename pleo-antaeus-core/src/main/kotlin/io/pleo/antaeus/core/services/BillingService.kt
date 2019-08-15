@@ -1,5 +1,6 @@
 package io.pleo.antaeus.core.services
 
+import io.pleo.antaeus.core.cron.FirstOfMonthCron
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
@@ -10,10 +11,16 @@ import javax.inject.Inject
 
 class BillingService @Inject constructor(
     private val paymentProvider: PaymentProvider,
-    private val invoiceService: InvoiceService
-) {
+    private val invoiceService: InvoiceService,
+    private val firstOfMonthCron: FirstOfMonthCron
+) : TaskExecutor {
+
     companion object {
         val log: Logger = LoggerFactory.getLogger("BillingService")
+    }
+
+    init {
+        activateService()
     }
 
     fun chargeUnpaidInvoices(): List<Invoice>  {
@@ -27,5 +34,21 @@ class BillingService @Inject constructor(
             }
         }
         return unpaidInvoices
+    }
+
+    fun activateService() {
+        log.info("Activating the service")
+
+        firstOfMonthCron.registerTaskExecutor(this)
+    }
+
+    fun disableService() {
+        log.info("Deactivating the service")
+
+        firstOfMonthCron.removeTaskExecutor(this)
+    }
+
+    override fun execute() {
+        chargeUnpaidInvoices()
     }
 }

@@ -10,4 +10,6 @@ dependencies {
     compile(project(":pleo-antaeus-models"))
     implementation("com.google.dagger:dagger:2.13")
     kapt("com.google.dagger:dagger-compiler:2.13")
+
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1")
 }
