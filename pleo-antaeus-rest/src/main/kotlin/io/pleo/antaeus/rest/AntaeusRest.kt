@@ -12,10 +12,11 @@ import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import mu.KotlinLogging
+import javax.inject.Inject
 
 private val logger = KotlinLogging.logger {}
 
-class AntaeusRest (
+class AntaeusRest @Inject constructor (
     private val invoiceService: InvoiceService,
     private val customerService: CustomerService,
     private val billingService: BillingService
@@ -25,7 +26,6 @@ class AntaeusRest (
         app.start(7000)
     }
 
-    // Set up Javalin rest app
     private val app = Javalin
         .create()
         .apply {
@@ -42,10 +42,8 @@ class AntaeusRest (
         }
 
     init {
-        // Set up URL endpoints for the rest app
         app.routes {
            path("rest") {
-               // Route to check whether the app is running
                // URL: /rest/health
                get("health") {
                    it.json("ok")

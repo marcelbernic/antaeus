@@ -5,9 +5,10 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
 
 
-class BillingService(
+class BillingService @Inject constructor(
     private val paymentProvider: PaymentProvider,
     private val invoiceService: InvoiceService
 ) {
