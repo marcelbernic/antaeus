@@ -1,6 +1,8 @@
 package io.pleo.antaeus.core.services
 
+import io.pleo.antaeus.core.commands.ChargeInvoiceCommand
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -20,13 +22,13 @@ class BillingService @Inject constructor(
         private val invoiceService: InvoiceService
 )  : CoroutineScope {
 
-    private val job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = job
-
     companion object {
         val log: Logger = LoggerFactory.getLogger("BillingService")
     }
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = job
 
     suspend fun sendInvoicesToPipeline(channel: Channel<Command>) {
         val unpaidInvoices = invoiceService.fetchByStatus(InvoiceStatus.PENDING)
@@ -34,9 +36,24 @@ class BillingService @Inject constructor(
         for (invoice in unpaidInvoices) {
             log.info("Locking invoice #${invoice.id}")
             invoiceService.updateInvoice(invoice.id, InvoiceStatus.IN_PROGRES)
+
             log.info("Sending invoice #${invoice.id} to the processing pipeline")
             val chargeInvoiceCommand = ChargeInvoiceCommand(paymentProvider, invoice)
             channel.send(chargeInvoiceCommand)
+        }
+    }
+
+    suspend fun processPaymentResults(channel: Channel<CommandResult>) {
+        for (commandResult in channel) {
+            val invoice = commandResult.getObject() as Invoice
+            if (commandResult.isSuccessful()) {
+                // Update status
+                invoiceService.updateInvoice(invoice.id, InvoiceStatus.PAID)
+                // Store event in database
+            } else {
+                // React on failure
+                log.error("PANIC the payment for ${invoice.id} FAILED")
+            }
         }
     }
 
@@ -44,9 +61,11 @@ class BillingService @Inject constructor(
         val chargeInvoices: () -> Unit = {
             launch {
                 log.info("Starting billing cycle at -> ${LocalDateTime.now()}")
-                val channel = Channel<Command>(1000)
-                startInvoiceProcessingPipeline(channel)
-                sendInvoicesToPipeline(channel)
+                val channelToPipeline = Channel<Command>(1000)
+                val channelFromPipeline = Channel<CommandResult>(1000)
+                startInvoiceProcessingPipeline(channelToPipeline, channelFromPipeline)
+                sendInvoicesToPipeline(channelToPipeline)
+                processPaymentResults(channelFromPipeline)
             }
         }
         return chargeInvoices

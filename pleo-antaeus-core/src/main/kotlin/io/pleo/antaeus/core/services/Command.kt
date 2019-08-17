@@ -1,5 +1,5 @@
 package io.pleo.antaeus.core.services
 
 interface Command {
-    fun execute()
+    fun execute() : CommandResult
 }

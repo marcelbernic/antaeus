@@ -4,5 +4,4 @@ interface Stoppable {
     fun pause()
     fun resume()
     fun hasStopped(): Boolean
-
 }

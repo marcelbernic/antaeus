@@ -29,7 +29,7 @@ class AntaeusRest @Inject constructor (
     private val app = Javalin
         .create()
         .apply {
-            // InvoiceNotFoundException: return 404 HTTP status code
+            // InvoiceNotFoundException: return 404 HTTP isSuccessful code
             exception(EntityNotFoundException::class.java) { _, ctx ->
                 ctx.status(404)
             }
