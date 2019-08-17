@@ -6,11 +6,9 @@ import dagger.Component
 import dagger.Module
 import dagger.Provides
 import io.pleo.antaeus.core.external.PaymentProvider
-import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.models.Invoice
-import io.pleo.antaeus.rest.AntaeusRest
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -18,7 +16,6 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.Connection
-import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
 
@@ -56,18 +53,11 @@ class AntaeusModule {
                     }
                 }
     }
-}
 
-class Antaeus {
-
-    @Inject lateinit var dateInitializer: DataInitializer
-    @Inject lateinit var billingService: BillingService
-    @Inject lateinit var rest: AntaeusRest
-
-    init {
-        DaggerAntaeusContext.create().initialize(this)
-        dateInitializer.setupInitialData()
-        rest.run()
+    @Singleton
+    @Provides
+    fun provideScheduler(): Scheduler {
+        return Scheduler(it.sauronsoftware.cron4j.Scheduler(), "* * * * *")
     }
 }
 

@@ -75,12 +75,12 @@ class AntaeusRest @Inject constructor (
                        }
                    }
 
-                   path("payments/invoices") {
-                       // URL: /rest/v1/payments/invoices
-                       get {
-                           it.json(billingService.chargeUnpaidInvoices())
-                       }
-                   }
+//                   path("payments/invoices") {
+//                       // URL: /rest/v1/payments/invoices
+//                       get {
+//                           it.json(billingService.chargeUnpaidInvoices())
+//                       }
+//                   }
                }
            }
         }
