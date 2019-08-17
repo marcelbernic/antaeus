@@ -61,6 +61,6 @@ class AntaeusModule {
     }
 }
 
-fun main() {
+fun main(){
     Antaeus()
 }
