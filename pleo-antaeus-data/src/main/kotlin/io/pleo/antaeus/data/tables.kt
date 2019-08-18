@@ -24,6 +24,7 @@ object EventTable : Table() {
     val id = integer("id").autoIncrement().primaryKey()
     val date = date("date")
     val customerId = reference("customer_id", CustomerTable.id)
+    val invoiceId = reference("invoice_id", InvoiceTable.id)
     val type = text("type")
     val message = text("message")
 }

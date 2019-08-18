@@ -26,7 +26,8 @@ fun ResultRow.toCustomer(): Customer = Customer(
 fun ResultRow.toEvent(): Event = Event(
         id = this[EventTable.id],
         date = this[EventTable.date].toDate(),
-        customerId = this[EventTable.id],
+        customerId = this[EventTable.customerId],
+        invoiceId = this[EventTable.invoiceId],
         type = EventType.valueOf(this[EventTable.type]),
         message = this[EventTable.message]
 )

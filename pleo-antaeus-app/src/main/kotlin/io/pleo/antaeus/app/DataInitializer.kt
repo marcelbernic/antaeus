@@ -19,7 +19,7 @@ class DataInitializer @Inject constructor(private val dal: AntaeusDal) {
     fun setupInitialData() {
         log.info("Populate database with invoices")
 
-        val customers = (1..10).mapNotNull {
+        val customers = (1..1).mapNotNull {
             dal.createCustomer(
                     currency = Currency.values()[Random.nextInt(0, Currency.values().size)]
             )

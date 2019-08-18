@@ -6,6 +6,7 @@ import io.pleo.antaeus.core.command.CommandResult
 import io.pleo.antaeus.core.command.CommandStatus
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.core.scheduler.EventObserver
+import io.pleo.antaeus.models.EventType
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +26,7 @@ import kotlin.coroutines.CoroutineContext
 @Singleton
 class BillingService @Inject constructor(
         private val paymentProvider: PaymentProvider,
+        private val eventService: EventService,
         private val invoiceService: InvoiceService
 )  : CoroutineScope, EventObserver {
 
@@ -83,6 +85,7 @@ class BillingService @Inject constructor(
         if (retriedTimes < 4) {
             log.info("Retry mechanism Triggered for ${invoice.id}, attempt #$retriedTimes")
             log.info("Waiting for ${retryStrategyDelays[retriedTimes]} MilliSeconds")
+            eventService.createEvent(invoice, EventType.PAYMENT_RETRY, "Attempt = $retriedTimes")
 
             delay(retryStrategyDelays[retriedTimes])
             val chargeInvoiceCommand = ChargeInvoiceCommand(paymentProvider, invoice)
@@ -91,6 +94,7 @@ class BillingService @Inject constructor(
         } else {
             // All attempts had failed
             log.info("All retry attempts had failed")
+            eventService.createEvent(invoice, EventType.PAYMENT_ERROR, "The payment did not succeeded (in $retriedTimes Attempts)")
             // Do something
             // mark this invoice as ERROR (so he can take individual attention)
             // Generate an event in the database

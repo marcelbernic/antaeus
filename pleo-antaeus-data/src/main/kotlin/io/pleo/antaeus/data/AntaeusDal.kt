@@ -102,12 +102,22 @@ class AntaeusDal @Inject constructor(private val db: Database) {
         }
     }
 
-    fun createEvent(customerId: Int, type: EventType, msg: String): Event? {
+    fun fetchEvents(customerId: Int): List<Event> {
+        return transaction(db) {
+            EventTable
+                    .selectAll()
+                    .map { it.toEvent() }
+                    .filter {event -> event.customerId == customerId}
+        }
+    }
+
+    fun createEvent(customerId: Int, invoiceId: Int, type: EventType, msg: String): Event? {
         val id = transaction(db) {
             // Insert the event and returns its new id.
             EventTable
                     .insert {
                         it[this.customerId] = customerId
+                        it[this.invoiceId] = invoiceId
                         it[this.date] = DateTime.now()
                         it[this.type] = type.toString()
                         it[this.message] = msg
