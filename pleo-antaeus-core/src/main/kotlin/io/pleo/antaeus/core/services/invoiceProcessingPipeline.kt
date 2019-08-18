@@ -2,7 +2,6 @@
 import io.pleo.antaeus.core.services.BillingService.Companion.log
 import io.pleo.antaeus.core.services.Command
 import io.pleo.antaeus.core.services.CommandResult
-import io.pleo.antaeus.models.Invoice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -20,7 +19,7 @@ fun CoroutineScope.startInvoiceProcessingPipeline(
     val invoiceToAgentsChannel = Channel<Command>(100000)
     val invoiceFromAgentsChannel = Channel<CommandResult>(100000)
 
-    repeat(2) {
+    repeat(20) {
         agent(it+1, invoiceToAgentsChannel, invoiceFromAgentsChannel)
     }
     invoiceProcessingOrchestrator(results, invoices, invoiceToAgentsChannel, invoiceFromAgentsChannel)
@@ -34,9 +33,6 @@ fun CoroutineScope.invoiceProcessingOrchestrator(
 
     log.info("Started Processing Queue")
     launch {
-        // mechanism to send an invoice just ONE time
-        // can be used with database LOCKING
-        val requestedInvoices = mutableSetOf<Invoice>()
         while (true) {
             select<Unit> {
                 invoiceFromProductorChannel.onReceive { ref ->
@@ -44,7 +40,6 @@ fun CoroutineScope.invoiceProcessingOrchestrator(
                         invoiceToAgentsChannel.send(ref)
                     }
                 invoiceFromAgentsChannel.onReceive { result ->
-                        //React in function of result (success, timeout, error)
                         invoiceBackToService.send(result)
                     }
             }
@@ -59,7 +54,7 @@ fun CoroutineScope.agent(
 
         launch {
             log.info("Spawn Agent($agentId)")
-            // Fan-out strategy
+            // Fan-out
             for (command in invoicesInChannel) {
                 log.info("Agent($agentId) starts processing ${command}")
                 val commandResult = command.execute()

@@ -1,6 +1,7 @@
 package io.pleo.antaeus.core.services
 
-import io.pleo.antaeus.core.commands.ChargeInvoiceCommand
+import io.pleo.antaeus.core.command.ChargeInvoiceCommand
+import io.pleo.antaeus.core.command.CommandStatus
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
@@ -30,6 +31,22 @@ class BillingService @Inject constructor(
     override val coroutineContext: CoroutineContext
         get() = job
 
+    fun runTask(): () -> Unit {
+        val chargeInvoices: () -> Unit = {
+            launch {
+                log.info("Starting billing cycle at [${LocalDateTime.now()}]")
+
+                val channelToPipeline = Channel<Command>(1000)
+                val channelFromPipeline = Channel<CommandResult>(1000)
+                startInvoiceProcessingPipeline(channelToPipeline, channelFromPipeline)
+
+                sendInvoicesToPipeline(channelToPipeline)
+                processPaymentResults(channelFromPipeline)
+            }
+        }
+        return chargeInvoices
+    }
+
     suspend fun sendInvoicesToPipeline(channel: Channel<Command>) {
         val unpaidInvoices = invoiceService.fetchByStatus(InvoiceStatus.PENDING)
 
@@ -46,29 +63,13 @@ class BillingService @Inject constructor(
     suspend fun processPaymentResults(channel: Channel<CommandResult>) {
         for (commandResult in channel) {
             val invoice = commandResult.getObject() as Invoice
-            if (commandResult.isSuccessful()) {
-                // Update status
-                invoiceService.updateInvoice(invoice.id, InvoiceStatus.PAID)
-                // Store event in database
-            } else {
-                // React on failure
-                log.error("PANIC the payment for ${invoice.id} FAILED")
+            when(commandResult.status()) {
+                CommandStatus.SUCCESS -> invoiceService.updateInvoice(invoice.id, InvoiceStatus.PAID)
+                CommandStatus.TIMEOUT -> log.info("Retry mechanism")
+                CommandStatus.CURRENCY_MISMATCH -> log.info("Throw error")
+                CommandStatus.NETWORK_ERROR -> log.info("Retry mechanism")
+                CommandStatus.UNKNOWN_ERROR -> log.info("Retry mechanism")
             }
         }
     }
-
-    fun runTask(): () -> Unit {
-        val chargeInvoices: () -> Unit = {
-            launch {
-                log.info("Starting billing cycle at -> ${LocalDateTime.now()}")
-                val channelToPipeline = Channel<Command>(1000)
-                val channelFromPipeline = Channel<CommandResult>(1000)
-                startInvoiceProcessingPipeline(channelToPipeline, channelFromPipeline)
-                sendInvoicesToPipeline(channelToPipeline)
-                processPaymentResults(channelFromPipeline)
-            }
-        }
-        return chargeInvoices
-    }
-
 }
