@@ -19,3 +19,11 @@ object CustomerTable : Table() {
     val id = integer("id").autoIncrement().primaryKey()
     val currency = varchar("currency", 3)
 }
+
+object EventTable : Table() {
+    val id = integer("id").autoIncrement().primaryKey()
+    val date = date("date")
+    val customerId = reference("customer_id", CustomerTable.id)
+    val type = text("type")
+    val message = text("message")
+}

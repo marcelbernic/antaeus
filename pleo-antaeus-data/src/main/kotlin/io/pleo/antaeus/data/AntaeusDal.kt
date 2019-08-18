@@ -10,6 +10,7 @@ package io.pleo.antaeus.data
 import io.pleo.antaeus.models.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 import javax.inject.Inject
 
 class AntaeusDal @Inject constructor(private val db: Database) {
@@ -91,5 +92,37 @@ class AntaeusDal @Inject constructor(private val db: Database) {
         }
 
         return fetchCustomer(id!!)
+    }
+
+    fun fetchEvents(): List<Event> {
+        return transaction(db) {
+            EventTable
+                .selectAll()
+                .map { it.toEvent() }
+        }
+    }
+
+    fun createEvent(customerId: Int, type: EventType, msg: String): Event? {
+        val id = transaction(db) {
+            // Insert the event and returns its new id.
+            EventTable
+                    .insert {
+                        it[this.customerId] = customerId
+                        it[this.date] = DateTime.now()
+                        it[this.type] = type.toString()
+                        it[this.message] = msg
+                    } get EventTable.id
+        }
+
+        return fetchEvent(id!!)
+    }
+
+    private fun fetchEvent(id: Int): Event? {
+        return transaction(db) {
+            EventTable
+                    .select { EventTable.id.eq(id) }
+                    .firstOrNull()
+                    ?.toEvent()
+        }
     }
 }

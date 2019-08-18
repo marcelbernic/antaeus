@@ -71,7 +71,7 @@ class BillingService @Inject constructor(
                 CommandStatus.SUCCESS -> invoiceService.updateInvoice(invoice.id, InvoiceStatus.PAID)
                 CommandStatus.TIMEOUT -> log.info("Retry mechanism")
                 CommandStatus.CURRENCY_MISMATCH -> log.info("Throw error")
-                CommandStatus.NETWORK_ERROR -> log.info("Retry mechanism")
+                CommandStatus.NETWORK_ERROR -> retryBilling(invoice)
                 CommandStatus.UNKNOWN_ERROR -> retryBilling(invoice)
             }
         }
