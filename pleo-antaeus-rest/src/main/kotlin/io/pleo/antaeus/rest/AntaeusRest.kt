@@ -74,13 +74,6 @@ class AntaeusRest @Inject constructor (
                            it.json(customerService.fetch(it.pathParam("id").toInt()))
                        }
                    }
-
-//                   path("payments/invoices") {
-//                       // URL: /rest/v1/payments/invoices
-//                       get {
-//                           it.json(billingService.chargeUnpaidInvoices())
-//                       }
-//                   }
                }
            }
         }

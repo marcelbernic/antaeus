@@ -1,6 +1,5 @@
 package io.pleo.antaeus.core.command
 
-import io.pleo.antaeus.core.services.CommandResult
 import io.pleo.antaeus.models.Invoice
 
 class ChargeInvoiceCommandResult (

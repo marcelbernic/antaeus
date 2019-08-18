@@ -6,6 +6,7 @@ import dagger.Component
 import dagger.Module
 import dagger.Provides
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.core.scheduler.Scheduler
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.models.Invoice

@@ -1,8 +1,11 @@
 package io.pleo.antaeus.core.services
 
 import io.pleo.antaeus.core.command.ChargeInvoiceCommand
+import io.pleo.antaeus.core.command.Command
+import io.pleo.antaeus.core.command.CommandResult
 import io.pleo.antaeus.core.command.CommandStatus
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.core.scheduler.EventObserver
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +24,7 @@ import kotlin.coroutines.CoroutineContext
 class BillingService @Inject constructor(
         private val paymentProvider: PaymentProvider,
         private val invoiceService: InvoiceService
-)  : CoroutineScope {
+)  : CoroutineScope, EventObserver {
 
     companion object {
         val log: Logger = LoggerFactory.getLogger("BillingService")
@@ -31,20 +34,17 @@ class BillingService @Inject constructor(
     override val coroutineContext: CoroutineContext
         get() = job
 
-    fun runTask(): () -> Unit {
-        val chargeInvoices: () -> Unit = {
-            launch {
-                log.info("Starting billing cycle at [${LocalDateTime.now()}]")
+    override fun runTask() {
+        launch {
+            log.info("Starting billing cycle at [${LocalDateTime.now()}]")
 
-                val channelToPipeline = Channel<Command>(1000)
-                val channelFromPipeline = Channel<CommandResult>(1000)
-                startInvoiceProcessingPipeline(channelToPipeline, channelFromPipeline)
+            val channelToPipeline = Channel<Command>(1000)
+            val channelFromPipeline = Channel<CommandResult>(1000)
+            startInvoiceProcessingPipeline(channelToPipeline, channelFromPipeline)
 
-                sendInvoicesToPipeline(channelToPipeline)
-                processPaymentResults(channelFromPipeline)
-            }
+            sendInvoicesToPipeline(channelToPipeline)
+            processPaymentResults(channelFromPipeline)
         }
-        return chargeInvoices
     }
 
     suspend fun sendInvoicesToPipeline(channel: Channel<Command>) {

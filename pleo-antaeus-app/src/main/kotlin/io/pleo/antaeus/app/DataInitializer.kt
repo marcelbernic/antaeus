@@ -26,7 +26,7 @@ class DataInitializer @Inject constructor(private val dal: AntaeusDal) {
         }
 
         customers.forEach { customer ->
-            (1..1).forEach {
+            (1..2).forEach {
                 dal.createInvoice(
                         amount = Money(
                                 value = BigDecimal(Random.nextDouble(10.0, 500.0)),

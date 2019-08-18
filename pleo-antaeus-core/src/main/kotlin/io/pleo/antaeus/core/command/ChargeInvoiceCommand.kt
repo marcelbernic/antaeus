@@ -3,8 +3,6 @@ package io.pleo.antaeus.core.command
 import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
-import io.pleo.antaeus.core.services.Command
-import io.pleo.antaeus.core.services.CommandResult
 import io.pleo.antaeus.models.Invoice
 
 class ChargeInvoiceCommand (

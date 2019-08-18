@@ -1,7 +1,7 @@
 
 import io.pleo.antaeus.core.services.BillingService.Companion.log
-import io.pleo.antaeus.core.services.Command
-import io.pleo.antaeus.core.services.CommandResult
+import io.pleo.antaeus.core.command.Command
+import io.pleo.antaeus.core.command.CommandResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel

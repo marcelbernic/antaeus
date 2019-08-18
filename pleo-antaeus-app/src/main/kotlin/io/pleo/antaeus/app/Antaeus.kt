@@ -1,5 +1,6 @@
 package io.pleo.antaeus.app
 
+import io.pleo.antaeus.core.scheduler.Scheduler
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.rest.AntaeusRest
 import javax.inject.Inject
@@ -17,7 +18,8 @@ class Antaeus {
     init {
         DaggerAntaeusContext.create().initialize(this)
         dateInitializer.setupInitialData()
-        scheduler.start(billingService.runTask())
+        scheduler.register(billingService)
+        scheduler.start()
         rest.run()
     }
 }

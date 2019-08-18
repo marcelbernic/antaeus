@@ -1,4 +1,4 @@
-package io.pleo.antaeus.core.services
+package io.pleo.antaeus.core.command
 
 interface Command {
     fun execute() : CommandResult

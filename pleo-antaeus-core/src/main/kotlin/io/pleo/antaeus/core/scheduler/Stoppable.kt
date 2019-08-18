@@ -1,4 +1,4 @@
-package io.pleo.antaeus.app
+package io.pleo.antaeus.core.scheduler
 
 interface Stoppable {
     fun pause()
