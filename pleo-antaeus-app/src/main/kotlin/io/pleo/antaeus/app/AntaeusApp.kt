@@ -16,7 +16,9 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.FileInputStream
 import java.sql.Connection
+import java.util.*
 import javax.inject.Singleton
 import kotlin.random.Random
 
@@ -58,7 +60,11 @@ class AntaeusModule {
     @Singleton
     @Provides
     fun provideScheduler(): Scheduler {
-        return Scheduler(it.sauronsoftware.cron4j.Scheduler(), "* * * * *")
+        val properties = Properties()
+        val propertyFile = FileInputStream("src/resources/application.properties")
+        properties.load(propertyFile)
+
+        return Scheduler(it.sauronsoftware.cron4j.Scheduler(), properties.getProperty("schedulingPattern"))
     }
 }
 
