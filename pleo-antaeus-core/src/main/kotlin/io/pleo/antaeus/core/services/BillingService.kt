@@ -21,7 +21,6 @@ import startInvoiceProcessingPipeline
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 
 class BillingService @Inject constructor(
@@ -43,7 +42,7 @@ class BillingService @Inject constructor(
     private val channelFromPipeline = Channel<CommandResult>(1000)
     // To keep track how many times we retried for a specific invoice <Key=invoiceId, Value=numberOfRetries>
     private val numberOFRetries = ConcurrentHashMap<Int, Int>()
-    private val retryStrategyDelays = arrayOf(0L, 1000L, 2000L, 3000L)
+    private val retryStrategyDelays = arrayOf(0L, Const.ONE_SEC, Const.THREE_SEC, Const.FIVE_SEC)
 
     override fun runTask() {
         launch {
@@ -108,7 +107,7 @@ class BillingService @Inject constructor(
         val retriedTimes = numberOFRetries.get(invoice.id) ?: 1
         if (retriedTimes < 4) {
             log.info("Retry mechanism Triggered for ${invoice.id}, attempt #$retriedTimes")
-            log.info("Waiting for ${retryStrategyDelays[retriedTimes]} MilliSeconds")
+            log.info("Waiting for ${retryStrategyDelays[retriedTimes]/1000} Seconds")
             eventService.createEvent(invoice, EventType.PAYMENT_RETRY, "Attempt = $retriedTimes")
             launch {
                 delay(retryStrategyDelays[retriedTimes])

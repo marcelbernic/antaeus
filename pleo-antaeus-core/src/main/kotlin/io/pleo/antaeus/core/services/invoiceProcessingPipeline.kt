@@ -2,6 +2,7 @@
 import io.pleo.antaeus.core.command.Command
 import io.pleo.antaeus.core.command.CommandResult
 import io.pleo.antaeus.core.services.BillingService.Companion.log
+import io.pleo.antaeus.core.services.Const
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -19,7 +20,7 @@ fun CoroutineScope.startInvoiceProcessingPipeline(
     val invoiceToAgentsChannel = Channel<Command>(100000)
     val invoiceFromAgentsChannel = Channel<CommandResult>(100000)
 
-    repeat(20) {
+    repeat(Const.NUMBER_OF_AGENTS) {
         agent(it+1, invoiceToAgentsChannel, invoiceFromAgentsChannel)
     }
     invoiceProcessingOrchestrator(results, invoices, invoiceToAgentsChannel, invoiceFromAgentsChannel)
