@@ -12,7 +12,9 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AntaeusDal @Inject constructor(private val db: Database) {
     fun fetchInvoice(id: Int): Invoice? {
         // transaction(db) runs the internal query as a new database transaction.
@@ -123,6 +125,7 @@ class AntaeusDal @Inject constructor(private val db: Database) {
                         it[this.message] = msg
                     } get EventTable.id
         }
+
 
         return fetchEvent(id!!)
     }

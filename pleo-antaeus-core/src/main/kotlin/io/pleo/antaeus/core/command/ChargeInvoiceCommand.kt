@@ -1,6 +1,5 @@
 package io.pleo.antaeus.core.command
 
-import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Invoice
@@ -22,8 +21,9 @@ class ChargeInvoiceCommand (
 
     private fun setCommandStatus(exception: Exception) : CommandStatus {
         when(exception) {
+            // We can easily add more exceptions types returned by external service
+            // ex: The customer don't have enough founds
             is NetworkException -> return CommandStatus.NETWORK_ERROR
-            is CurrencyMismatchException -> return CommandStatus.CURRENCY_MISMATCH
         }
         return CommandStatus.UNKNOWN_ERROR
     }

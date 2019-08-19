@@ -21,6 +21,7 @@ import java.io.FileInputStream
 import java.sql.Connection
 import java.util.*
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 @Component(modules = [AntaeusModule::class])
@@ -35,8 +36,7 @@ class AntaeusModule {
     fun providePaymentProvider(): PaymentProvider {
         return object : PaymentProvider {
             override fun charge(invoice: Invoice): Boolean {
-//                return Random.nextBoolean()
-                return false
+                return Random.nextBoolean()
             }
         }
     }
