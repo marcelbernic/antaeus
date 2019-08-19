@@ -4,6 +4,8 @@
 1. Get familiar with Kotlin and his developing ecosystem
 2. Understand well the requirements, explore the project and made a couple of requests to the existing resources
 3. Think about the design of the solution
+  - The system should be: performant, reliable, should handle transparently the different error types, the operations are idempotent ideally
+  - All the events should be registered (for traceability and reporting)
 4. Code a very basic solution (just to have a working solution)
 5. Learn about the coroutines (I want to make the app fast, process invoices in parallel)
 6. Find a reasonable library for dependency injection
@@ -23,6 +25,7 @@ to pass messages (commands) between components and to distribute the main flow t
 The system should be scalable and it should be relatively easy to add new features, that's why I introduced a couple of abstractions.
 The pipeline can be used for other computations as we wrap the action in a command object. The pipeline expects a stream of commands and as long as these
 commands respect the contract (Interfaces: Command and CommandResult) the pipeline will work (I added an image at the root project for the general principle).
+I want to be able to scale (horizontally) the application
 
 ### The scheduler
 I choosed to use a library and to make the scheduler in-app (we can also implement the scheduler as a cron job outside of the main application). The scheduling pattern is configurable in properties file. I started to implement
@@ -36,14 +39,34 @@ write some tests. Once you have a setup that works, dagger is very powerful and 
 with but it is an investment that pays off really fast after that and the code becomes more clean and elegant. 
 
 ### The tests
+This challenge was not coded using TDD as I did a lot of exploration in the same time, so TDD was not o good option in this particular case. 
+
+I made the error to leave writing the tests at the end. As I didn't have much time, I don't have a good coverage of tests for the 'Billing Service'. 
+I didn't do a lot of unit testing. I used the real componenets for the integration tests. I lost a ot time setting up the tests with dagger.
+It was difficult to test for the parallelism (the pipeline) but I can refactor a little bit the solution so it becomes more test friendly (make the retry
+strategy parametrable)
 
 ### Possible new features
-
-### Production grade 
+- Generate reports from events
+- Setting timeouts for coroutines
+- Different retry mechanisms (parametrable)
+- Add a notification system (to send automatically messages to clients and system administrators, for example when a payment fails)
+- Apply discounts for specific clients
 
 ### Time Estimation
-It took me a couple of days to learn the basics about Kotlin, the coroutines and some useful libraries that could be helpful for beat Antaeus.
-For writing the code  I made 4-5 sessions of coding 3 hours each so in total it was roughly 12-15 hours.
+It took me a couple of days to learn the basics about Kotlin, the coroutines and some useful libraries that could be helpful to beat Antaeus.
+For writing the code  I made 4-5 sessions of coding 3 hours each so in total it was roughly 12-15 hours of coding.
+
+### Improvements (not coded do to self-imposed time limit) - getting closer to a production grade app
+1. Dynamic number of workers (adapt the number of agents in function of the number of invoices to process and delay)
+2. More tests (integration and system)
+3. Consider TimeZone
+4. Mechanism of limiting the blast radius 
+5. Generating reports (for specific client, for specific date intercal)
+6. Being able to pay just one invoice (another rest resource)
+7. Validate the scheduling pattern
+8. Make some methods to have less responsabilities (ideally just one)
+9. Make some commands undoable
 
 ### Libraries
 - kotlin coroutines
@@ -51,8 +74,18 @@ For writing the code  I made 4-5 sessions of coding 3 hours each so in total it 
 - www.sauronsoftware.it/projects/cron4j
 
 ### Notes
+- I used an properties file to make configurable some parameters of the application. I used it for the scheduling pattern but there are plenty of other 
+possibilities that can be configurable (ex: the retry mechanism, dynamic number of agents(workers) etc.)
+- Some methods may appear too big (wall of text) (and some of them trully are :) ) but I leaved a lot of logging and comments in the code
+so the persoan who will review well understand faster my intent. If we remove all the unneeded comments and logs the code will be much cleaner.
+- As it is the first time that I use Kotlin sometimes I felt like I didn't used fully the features he offers. 
+- This solution needs more refactoring and testing but for the scope of the exercices I'll let it like that for instant
+- I'm open to discuss different suggestions and explain some of my decisions during a review
+
 
 ### Final thoughts
+It was my first experience ever with Kotiln. I enjoyed doing the challenge and I learned a lot of new things. I'll consider using Kotlin for some 
+personal projects in the future and explore more the powerful features he has. I took me more time that I thought at the beginning of the challenge.
 
 ## Antaeus
 
