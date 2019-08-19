@@ -1,6 +1,7 @@
 package io.pleo.antaeus.core.command
 
 import io.pleo.antaeus.core.exceptions.NetworkException
+import io.pleo.antaeus.core.exceptions.NotEnoughFoundsException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Invoice
 
@@ -23,6 +24,7 @@ class ChargeInvoiceCommand (
         when(exception) {
             // We can easily add more exceptions types returned by external service
             // ex: The customer don't have enough founds
+            is NotEnoughFoundsException -> return CommandStatus.NOT_ENOUGH_FOUNDS
             is NetworkException -> return CommandStatus.NETWORK_ERROR
         }
         return CommandStatus.UNKNOWN_ERROR

@@ -1,10 +1,13 @@
+import org.gradle.internal.impldep.org.fusesource.jansi.AnsiRenderer.test
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     base
     kotlin("jvm") version "1.3.21" apply false
     id("org.jmailen.kotlinter") version "1.20.1"
+    id("idea")
 }
+
 
 allprojects {
     group = "io.pleo"

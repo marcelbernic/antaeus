@@ -59,7 +59,7 @@ fun CoroutineScope.agent(
             for (command in invoicesInChannel) {
                 log.info("Agent($agentId) starts processing ${command}")
                 val commandResult = command.execute()
-                delay(500)
+                delay(500) // simulate a delay (just for observing the parallel behhaviour)
                 log.info("Agent($agentId) >>> ${command}[${LocalDateTime.now()}]")
                 invoicesOutChannel.send(commandResult)
             }

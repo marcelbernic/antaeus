@@ -4,5 +4,6 @@ enum class CommandStatus {
     SUCCESS,
     TIMEOUT,
     NETWORK_ERROR,
-    UNKNOWN_ERROR
+    UNKNOWN_ERROR,
+    NOT_ENOUGH_FOUNDS
 }

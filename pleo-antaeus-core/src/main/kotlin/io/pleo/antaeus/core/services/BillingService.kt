@@ -59,12 +59,12 @@ class BillingService @Inject constructor(
         for (invoice in unpaidInvoices) {
             if (isValid(invoice)) {
                 log.info("Locking invoice #${invoice.id}")
-                invoiceService.updateInvoice(invoice.id, InvoiceStatus.IN_PROGRES)
+                invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.IN_PROGRES)
                 log.info("Sending invoice #${invoice.id} to the processing pipeline")
                 channelToPipeline.send(ChargeInvoiceCommand(paymentProvider, invoice))
             } else {
                 log.info("Found Invalid invoice #${invoice.id}. Required manual attention by an Operator")
-                invoiceService.updateInvoice(invoice.id, InvoiceStatus.INVALID)
+                invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.INVALID)
             }
         }
     }
@@ -95,9 +95,10 @@ class BillingService @Inject constructor(
         for (commandResult in channelFromPipeline) {
             val invoice = commandResult.getObject() as Invoice
             when(commandResult.status()) {
-                CommandStatus.SUCCESS -> invoiceService.updateInvoice(invoice.id, InvoiceStatus.PAID)
+                CommandStatus.SUCCESS -> invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.PAID)
                 CommandStatus.TIMEOUT -> retryBilling(invoice)
                 CommandStatus.NETWORK_ERROR -> retryBilling(invoice)
+                CommandStatus.NOT_ENOUGH_FOUNDS -> paymentFailed(invoice)
                 CommandStatus.UNKNOWN_ERROR -> retryBilling(invoice)
             }
         }
@@ -122,9 +123,14 @@ class BillingService @Inject constructor(
             // Generate an event in the database
             // Notify (client/administration)
             eventService.createEvent(invoice, EventType.PAYMENT_ERROR, "The payment did not succeeded (in $retriedTimes Attempts)")
-            invoiceService.updateInvoice(invoice.id, InvoiceStatus.FAILED)
+            invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.FAILED)
             numberOFRetries.remove(invoice.id)
         }
+    }
 
+    private fun paymentFailed(invoice: Invoice) {
+        eventService.createEvent(invoice, EventType.PAYMENT_ERROR, "The payment for Invoice#${invoice.id} Failed")
+        // maybe notify the client or set his status to iNACTIVE
+        invoiceService.updateInvoiceStatus(invoice.id, InvoiceStatus.FAILED)
     }
 }

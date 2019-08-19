@@ -11,6 +11,7 @@ import io.pleo.antaeus.models.InvoiceStatus
 import javax.inject.Inject
 
 class InvoiceService @Inject constructor(private val dal: AntaeusDal) {
+
     fun fetchAll(): List<Invoice> {
        return dal.fetchInvoices()
     }
@@ -23,7 +24,7 @@ class InvoiceService @Inject constructor(private val dal: AntaeusDal) {
         return dal.fetchInvoice(id) ?: throw InvoiceNotFoundException(id)
     }
 
-    fun updateInvoice(id: Int, status: InvoiceStatus) {
+    fun updateInvoiceStatus(id: Int, status: InvoiceStatus) {
         return dal.updateInvoice(id, status)
     }
 }
